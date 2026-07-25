@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sygnific — the AI receptionist working your night shift</title>
+<meta name="description" content="Sygnific answers your business line 24/7 — triages emergencies, books jobs, and texts customers while you sleep. Built for UK trades.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070C18; --bg2:#0B1326; --panel:#0F1A33; --panel-2:#132146;
+  --line:#1D2C52; --ink:#E8EEF9; --dim:#93A3C4; --dim2:#5D6E93;
+  --hivis:#FFC400; --ok:#45E08A; --glow:rgba(255,196,0,.14);
+  --max:1120px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
+a{color:inherit}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+.grid-bg{position:fixed;inset:0;z-index:-2;background:
+  linear-gradient(rgba(29,44,82,.22) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(29,44,82,.22) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 75%)}
+.glow-orb{position:fixed;z-index:-1;width:640px;height:640px;border-radius:50%;filter:blur(120px);opacity:.35;pointer-events:none}
+.orb-a{background:#123; top:-220px;left:-160px}
+.orb-b{background:rgba(255,196,0,.10); top:30%;right:-260px}
+
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(7,12,24,.7);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.logo{font-weight:700;font-size:1.3rem;letter-spacing:.04em}
+.logo b{color:var(--hivis)}
+.status{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--dim)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+@media(prefers-reduced-motion:no-preference){.dot{animation:pulse 2s infinite}}
+@keyframes pulse{50%{opacity:.4}}
+.nav a.cta{background:var(--hivis);color:#0A0F1E;font-weight:700;padding:.55em 1.1em;border-radius:8px;text-decoration:none;font-size:.9rem}
+
+.hero{padding:84px 0 60px;position:relative}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.kicker{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg2);color:var(--dim);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;padding:.5em 1em;border-radius:999px;margin-bottom:22px}
+.kicker i{width:6px;height:6px;border-radius:50%;background:var(--hivis);display:inline-block}
+h1{font-weight:700;font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.05;letter-spacing:-.02em}
+h1 .y{color:var(--hivis);text-shadow:0 0 34px var(--glow)}
+.lead{margin:22px 0 30px;color:var(--dim);font-size:1.1rem;max-width:36ch}
+.btnrow{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-block;font-weight:700;padding:.9em 1.5em;border-radius:10px;text-decoration:none;font-size:.98rem;transition:transform .15s ease,box-shadow .15s ease}
+.btn-y{background:var(--hivis);color:#0A0F1E}
+.btn-y:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,196,0,.25)}
+.btn-o{border:1px solid var(--line);color:var(--ink);background:rgba(15,26,51,.5)}
+.btn-o:hover{border-color:var(--hivis)}
+
+.console{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);overflow:hidden}
+.console .head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);font-size:.72rem;color:var(--dim2)}
+.console .head b{color:var(--ok);font-weight:500}
+canvas#wave{display:block;width:100%;height:64px;background:rgba(7,12,24,.5)}
+.feed{padding:18px;min-height:238px;font-size:.85rem}
+.feed p{margin-bottom:13px}
+.feed .who{display:block;font-size:.68rem;letter-spacing:.1em;color:var(--dim2);margin-bottom:2px}
+.feed .agent .who{color:var(--ok)}
+.feed .caller{color:#C9D6EE}
+.feed .agent{color:#EAF9F0}
+.feed .booked{display:inline-block;margin-top:4px;background:rgba(69,224,138,.1);border:1px solid rgba(69,224,138,.35);color:var(--ok);border-radius:8px;padding:.5em .9em;font-size:.76rem}
+.caret{display:inline-block;width:8px;height:1em;background:var(--hivis);vertical-align:text-bottom;margin-left:2px}
+@media(prefers-reduced-motion:no-preference){.caret{animation:blink 1s steps(1) infinite}}
+@keyframes blink{50%{opacity:0}}
+
+.stats{border-block:1px solid var(--line);background:rgba(11,19,38,.6)}
+.stats .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:30px 22px;text-align:center}
+.stat b{font-size:2rem;font-weight:700;color:var(--hivis)}
+.stat span{display:block;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);margin-top:4px}
+
+section{padding:84px 0}
+.eyebrow{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--hivis);margin-bottom:12px}
+h2{font-weight:700;font-size:clamp(1.6rem,3.4vw,2.3rem);letter-spacing:-.01em;margin-bottom:12px}
+.sub{color:var(--dim);max-width:56ch}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px;position:relative;transition:transform .2s ease,border-color .2s ease}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,196,0,.5)}
+.card .tag{font-size:.68rem;letter-spacing:.12em;color:var(--dim2);display:block;margin-bottom:14px}
+.card h3{font-size:1.05rem;font-weight:600;margin-bottom:8px}
+.card p{color:var(--dim);font-size:.94rem}
+
+.steps{position:relative}
+.steps::before{content:"";position:absolute;top:38px;left:16%;right:16%;height:1px;background:linear-gradient(90deg,transparent,var(--hivis),transparent);opacity:.5}
+.steps .card{padding-top:58px}
+.steps .card::before{content:attr(data-n);position:absolute;top:18px;left:24px;color:#0A0F1E;background:var(--hivis);border-radius:6px;padding:.2em .6em;font-family:'IBM Plex Mono',monospace;font-size:.74rem}
+
+.price-card{max-width:460px;margin:44px auto 0;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,196,0,.4);border-radius:18px;padding:36px;text-align:center;box-shadow:0 0 60px rgba(255,196,0,.07)}
+.amount{font-size:3rem;font-weight:700;color:var(--hivis)}
+.amount small{font-size:1rem;color:var(--dim);font-weight:500}
+.price-card ul{list-style:none;margin:22px 0 28px;text-align:left}
+.price-card li{padding:9px 0;border-bottom:1px dashed var(--line);color:var(--dim);font-size:.93rem}
+.price-card li::before{content:"→ ";color:var(--ok)}
+.price-card li:last-child{border:none}
+
+footer{border-top:1px solid var(--line);color:var(--dim2);font-size:.84rem;padding:36px 0}
+footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+
+.reveal{opacity:0;transform:translateY(18px)}
+.reveal.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s ease}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+
+@media(max-width:860px){
+  .hero .wrap{grid-template-columns:1fr}
+  .cols{grid-template-columns:1fr}
+  .steps::before{display:none}
+  .stats .wrap{grid-template-columns:1fr;gap:26px}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow-orb orb-a"></div>
+<div class="glow-orb orb-b"></div>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">SYGN<b>I</b>FIC</div>
+    <div class="status"><span class="dot"></span><span class="mono">RECEPTIONIST ONLINE</span></div>
+    <a class="cta" href="#contact">Get set up</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="kicker"><i></i>AI receptionist · UK trades</span>
+      <h1>Your phone line never sleeps.<br><span class="y">Neither do we.</span></h1>
+      <p class="lead">Sygnific answers your business line around the clock — triages the emergency, books the job, texts the customer — while you're on the tools or off the clock.</p>
+      <div class="btnrow">
+        <a class="btn btn-y" href="tel:+000000000000">Ring the live demo</a>
+        <a class="btn btn-o" href="#how">See how it works</a>
+      </div>
+    </div>
+    <div class="console reveal">
+      <div class="head mono"><span>LINE 01 · INCOMING</span><b>ANSWERED 0.8s</b></div>
+      <canvas id="wave" height="64"></canvas>
+      <div class="feed mono" id="feed" aria-live="off"></div>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stat reveal"><b class="mono" data-count="24">0</b><span>hours on duty, every day</span></div>
+    <div class="stat reveal"><b class="mono" data-count="1" data-suffix="s">0</b><span>typical answer time</span></div>
+    <div class="stat reveal"><b class="mono" data-count="100" data-suffix="%">0</b><span>of calls logged &amp; summarised</span></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">// What it catches</p>
+    <h2>Every missed call is a job your competitor gets.</h2>
+    <p class="sub">Voicemail is where customers go to give up. Sygnific picks up instead — and turns the call into a booked job before they ring the next number on the list.</p>
+    <div class="cols">
+      <div class="card reveal"><span class="tag mono">23:47 · AFTER HOURS</span><h3>The midnight burst pipe</h3><p>Emergency callers don't leave messages — they ring the next firm. Sygnific answers in under a second, triages, and books the emergency slot.</p></div>
+      <div class="card reveal"><span class="tag mono">14:20 · ON THE TOOLS</span><h3>The mid-job enquiry</h3><p>You're elbow-deep in a boiler when the line rings out. Sygnific takes the details, quotes from your own price list, and books the visit.</p></div>
+      <div class="card reveal"><span class="tag mono">09:05 · OVERFLOW</span><h3>The engaged tone</h3><p>Two calls at once used to mean one lost customer. Overflow routes straight to your receptionist — nobody hears the busy signal.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">// How it works</p>
+    <h2>Live on your existing number within a week.</h2>
+    <div class="cols steps">
+      <div class="card reveal" data-n="01"><h3>Tell us about your business</h3><p>One short form — services, prices, postcodes, hours, where bookings should land.</p></div>
+      <div class="card reveal" data-n="02"><h3>We build your receptionist</h3><p>Trained on your price list and your patch. You test it yourself before it takes a single real call.</p></div>
+      <div class="card reveal" data-n="03"><h3>Forward your missed calls</h3><p>Keep your number. After-hours and missed calls forward to Sygnific. Everything else stays exactly as it is.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">// Pricing</p>
+    <h2>One plan. No call-centre contracts.</h2>
+    <div class="price-card reveal">
+      <div class="amount mono">£149<small>/month</small></div>
+      <ul>
+        <li>24/7 answering on your existing number</li>
+        <li>Emergency triage &amp; live job booking</li>
+        <li>SMS confirmations to your customers</li>
+        <li>Weekly summary of every call handled</li>
+        <li>No setup fee · cancel monthly</li>
+      </ul>
+      <a class="btn btn-y" href="#contact">Get set up</a>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap" style="text-align:center;max-width:640px">
+    <p class="eyebrow">// Get started</p>
+    <h2>Hear it before you buy it.</h2>
+    <p class="sub" style="margin:0 auto 30px">Ring the demo line and try to catch it out — burst pipe at midnight, awkward postcode, price questions. Then message us and yours is live within the week.</p>
+    <div class="btnrow" style="justify-content:center">
+      <a class="btn btn-y" href="tel:+000000000000">Ring the live demo</a>
+      <a class="btn" style="background:#1FA855;color:#fff" href="https://wa.me/254727866712">WhatsApp us</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© SYGNIFIC LIMITED · All rights reserved</div>
+    <div class="mono">hello@sygnific.uk</div>
+  </div>
+</footer>
+
+<script>
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+const cio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return;cio.unobserve(e.target);
+  const el=e.target,target=+el.dataset.count,suf=el.dataset.suffix||'';
+  if(reduced){el.textContent=target+suf;return}
+  let t0=null;const step=ts=>{if(!t0)t0=ts;const p=Math.min((ts-t0)/900,1);
+    el.textContent=Math.round(target*p)+suf;if(p<1)requestAnimationFrame(step)};
+  requestAnimationFrame(step);
+}),{threshold:.6});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+const cv=document.getElementById('wave'),cx=cv.getContext('2d');
+let W,H,t=0,talking=true;
+function size(){W=cv.width=cv.offsetWidth;H=cv.height=64}
+size();addEventListener('resize',size);
+function draw(){
+  cx.clearRect(0,0,W,H);cx.beginPath();
+  const amp=talking?1:0.18;
+  for(let x=0;x<W;x+=3){
+    const n=Math.sin(x*.045+t)*Math.sin(x*.013-t*1.7)*Math.sin(t*.9+x*.002);
+    const y=H/2+n*(H/2.6)*amp*(0.55+0.45*Math.sin(t*2.3+x*.01));
+    x===0?cx.moveTo(x,y):cx.lineTo(x,y);
+  }
+  cx.strokeStyle='rgba(255,196,0,.9)';cx.lineWidth=1.6;cx.stroke();
+  t+=.06;requestAnimationFrame(draw);
+}
+if(!reduced)draw();else{cx.fillStyle='rgba(255,196,0,.5)';cx.fillRect(0,H/2,W,1.5)}
+
+const scenarios=[
+ [["CALLER","Water's coming through my kitchen ceiling — is anyone there?"],
+  ["SYGNIFIC","That's an emergency — let's get someone to you. What's your postcode?"],
+  ["CALLER","M14 5TQ."],
+  ["SYGNIFIC","I can book tonight's emergency slot. Shall I confirm it?"],
+  ["BOOKED","✓ JOB BOOKED · 23:49 · SMS CONFIRMATION SENT"]],
+ [["CALLER","How much for a boiler service?"],
+  ["SYGNIFIC","That's £85 including VAT. I can offer Tuesday morning or Wednesday afternoon."],
+  ["CALLER","Tuesday works."],
+  ["BOOKED","✓ JOB BOOKED · TUE 09:00–11:00 · SMS SENT"]],
+ [["CALLER","Are you the real receptionist or a machine?"],
+  ["SYGNIFIC","I'm the AI assistant — and I've already found you a slot. Impressed yet?"],
+  ["BOOKED","✓ ENQUIRY LOGGED · OWNER NOTIFIED"]]
+];
+const feed=document.getElementById('feed');
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+async function typeLine(who,text){
+  const p=document.createElement('p');
+  p.className=who==='SYGNIFIC'?'agent':who==='BOOKED'?'':'caller';
+  if(who==='BOOKED'){p.innerHTML='<span class="booked">'+esc(text)+'</span>';feed.appendChild(p);return}
+  p.innerHTML='<span class="who">'+who+'</span><span class="tx"></span><span class="caret"></span>';
+  feed.appendChild(p);const tx=p.querySelector('.tx');
+  if(reduced){tx.textContent=text;p.querySelector('.caret').remove();return}
+  for(let i=0;i<=text.length;i++){tx.textContent=text.slice(0,i);await new Promise(r=>setTimeout(r,16+Math.random()*22))}
+  p.querySelector('.caret').remove();
+}
+async function run(){
+  let s=0;
+  for(;;){
+    feed.innerHTML='';talking=true;
+    for(const[who,text]of scenarios[s]){await typeLine(who,text);await new Promise(r=>setTimeout(r,420))}
+    talking=false;await new Promise(r=>setTimeout(r,3600));
+    s=(s+1)%scenarios.length;
+  }
+}
+run();
+</script>
+</body>
+</html>
