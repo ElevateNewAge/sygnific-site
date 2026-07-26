@@ -267,6 +267,7 @@ section[id]{scroll-margin-top:86px}
   color:var(--lime);letter-spacing:.04em;border-bottom:1px solid rgba(204,234,29,.4);
   padding-bottom:3px}
 .dial a:hover{border-bottom-color:var(--lime)}
+a.copied{color:var(--navy)!important;background:var(--lime);border-color:var(--lime)}
 .dial .note{display:block;margin-top:14px;font-family:'IBM Plex Mono',monospace;
   font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 
@@ -607,6 +608,39 @@ footer img{height:30px;width:auto;margin-bottom:12px;opacity:.9}
   stamp.classList.remove('show');
 
   function playLog(){ if(seen) return; seen=true; render('trade', true); }
+
+  /* a desktop browser cannot place a call, so copy the number instead of
+     firing a tel: link that Windows offers to open in seven apps that all fail */
+  var canDial = window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+  if(!canDial){
+    document.querySelectorAll('a[href^="tel:"]').forEach(function(a){
+      var num = a.getAttribute('href').replace('tel:','');
+      a.setAttribute('title', 'Click to copy ' + num);
+      a.addEventListener('click', function(ev){
+        ev.preventDefault();
+        function done(){
+          if(!a.dataset.label) a.dataset.label = a.textContent;
+          a.textContent = 'Number copied';
+          a.classList.add('copied');
+          clearTimeout(a._revert);
+          a._revert = setTimeout(function(){
+            a.textContent = a.dataset.label;
+            a.classList.remove('copied');
+          }, 2200);
+        }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(num).then(done, done);
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = num; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); } catch(e) {}
+          document.body.removeChild(ta);
+          done();
+        }
+      });
+    });
+  }
 
   /* count-up proof strip, carried over from the previous site */
   var cio = new IntersectionObserver(function(es){
